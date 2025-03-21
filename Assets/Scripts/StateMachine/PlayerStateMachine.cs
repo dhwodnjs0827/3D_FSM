@@ -20,6 +20,7 @@ public class PlayerStateMachine : StateMachine
     public PlayerRunState RunState { get; private set; }
 
     public PlayerJumpState JumpState { get; private set; }
+    public PlayerFallState FallState { get; private set; }
 
     public PlayerStateMachine(Player player)
     {
@@ -32,6 +33,7 @@ public class PlayerStateMachine : StateMachine
         RunState = new PlayerRunState(this);
 
         JumpState = new PlayerJumpState(this);
+        FallState = new PlayerFallState(this);
 
         MovementSpeed = player.Data.GroundData.BaseSpeed;
         RotationDamping = player.Data.GroundData.BaseRotationDamping;
