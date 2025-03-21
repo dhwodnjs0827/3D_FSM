@@ -29,6 +29,7 @@ public class PlayerBaseState : IState
         PlayerController input = stateMachine.Player.Input;
         input.playerActions.Movement.canceled += OnMovementCanceled;
         input.playerActions.Run.started += OnRunStarted;
+        input.playerActions.Jump.started += OnJumpStarted;
     }
 
     protected virtual void RemoveInputActionsCallbacks()
@@ -36,9 +37,9 @@ public class PlayerBaseState : IState
         PlayerController input = stateMachine.Player.Input;
         input.playerActions.Movement.canceled -= OnMovementCanceled;
         input.playerActions.Run.started -= OnRunStarted;
-
+        input.playerActions.Jump.started -= OnJumpStarted;
     }
-    
+
     public virtual void HandleInput()
     {
         ReadMovementInput();
@@ -46,7 +47,6 @@ public class PlayerBaseState : IState
 
     public virtual void PhysicsUpdate()
     {
-
     }
 
     public virtual void Update()
@@ -54,15 +54,17 @@ public class PlayerBaseState : IState
         // StartAnimation 함수 먼저 작성
         Move();
     }
-    
+
     protected virtual void OnMovementCanceled(InputAction.CallbackContext context)
     {
-
     }
 
     protected virtual void OnRunStarted(InputAction.CallbackContext context)
     {
-
+    }
+    
+    protected virtual void OnJumpStarted(InputAction.CallbackContext context)
+    {
     }
 
     protected void StartAnimation(int animationHash)
@@ -84,9 +86,9 @@ public class PlayerBaseState : IState
     {
         // GetMovementDirection 함수 먼저 작성
         Vector3 movementDirection = GetMovementDirection();
-        
+
         Move(movementDirection);
-				
+
         // Rotate 함수 먼저 작성
         Rotate(movementDirection);
     }
@@ -102,15 +104,15 @@ public class PlayerBaseState : IState
         forward.Normalize();
         right.Normalize();
 
-        return forward * stateMachine.MovementInput.y + right * stateMachine.MovementInput.x; 
+        return forward * stateMachine.MovementInput.y + right * stateMachine.MovementInput.x;
     }
 
     private void Move(Vector3 direction)
     {
         float movementSpeed = GetMovementSpeed();
-        
+
         stateMachine.Player.Controller.Move(
-            (direction * movementSpeed) * Time.deltaTime
+            ((direction * movementSpeed) + stateMachine.Player.ForceReceiver.Movement) * Time.deltaTime
         );
     }
 
@@ -122,11 +124,12 @@ public class PlayerBaseState : IState
 
     private void Rotate(Vector3 direction)
     {
-        if(direction != Vector3.zero)
+        if (direction != Vector3.zero)
         {
             Transform playerTransform = stateMachine.Player.transform;
             Quaternion targetRotation = Quaternion.LookRotation(direction);
-            playerTransform.rotation = Quaternion.Slerp(playerTransform.rotation, targetRotation, stateMachine.RotationDamping * Time.deltaTime);
+            playerTransform.rotation = Quaternion.Slerp(playerTransform.rotation, targetRotation,
+                stateMachine.RotationDamping * Time.deltaTime);
         }
     }
 }
